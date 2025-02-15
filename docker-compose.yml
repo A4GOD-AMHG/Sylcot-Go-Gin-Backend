@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql
+    container_name: sylcot_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [
+        "CMD", "mysqladmin", "ping", "-h", "localhost",
+        "--user=${DB_USER}", "--password=${DB_PASSWORD}"
+      ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sylcot_backend
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    volumes:
+      - go_modules:/go/pkg/mod
+    env_file:
+      - .env
+
+volumes:
+  mysql_data:
+  go_modules:
