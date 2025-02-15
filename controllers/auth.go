@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	_ "github.com/alastor-4/sylcot-go-gin-backend/docs"
 	"github.com/alastor-4/sylcot-go-gin-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -21,7 +22,19 @@ type AuthController struct {
 	DB *gorm.DB
 }
 
-func (a *AuthController) Register(c *gin.Context) {
+// Register godoc
+// @Summary Register new user
+// @Description Create a new user account
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param user body models.User true "Registration data"
+// @Success 201 {object} map[string]interface{} "message: User registered successfully..."
+// @Failure 400 {object} map[string]interface{} "error: Validation failed, details: field errors"
+// @Failure 409 {object} map[string]interface{} "error: User already exists"
+// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Router /auth/register [post]
+func (ac *AuthController) Register(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -41,7 +54,7 @@ func (a *AuthController) Register(c *gin.Context) {
 	}
 
 	var existingUser models.User
-	if err := a.DB.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
+	if err := ac.DB.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User with that email already registered"})
 		return
 	}
@@ -62,7 +75,7 @@ func (a *AuthController) Register(c *gin.Context) {
 		Token:      verificationToken,
 	}
 
-	if err := a.DB.Create(&newUser).Error; err != nil {
+	if err := ac.DB.Create(&newUser).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not register the user"})
 		return
 	}
@@ -77,7 +90,24 @@ func (a *AuthController) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully. Please verify your email."})
 }
 
-func (a *AuthController) Login(c *gin.Context) {
+type LoginRequest struct {
+	Email    string `json:"email" example:"user@example.com"`
+	Password string `json:"password" example:"password123"`
+}
+
+// Login godoc
+// @Summary User login
+// @Description Authenticate user and return JWT token
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param credentials body LoginRequest true "Login credentials"
+// @Success 200 {object} map[string]interface{} "token: JWT string"
+// @Failure 400 {object} map[string]interface{} "error: Invalid data"
+// @Failure 401 {object} map[string]interface{} "error: Invalid credentials"
+// @Failure 403 {object} map[string]interface{} "error: Email not verified"
+// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+func (ac *AuthController) Login(c *gin.Context) {
 	var loginData struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -89,7 +119,7 @@ func (a *AuthController) Login(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := a.DB.Where("email = ?", loginData.Email).First(&user).Error; err != nil {
+	if err := ac.DB.Where("email = ?", loginData.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
@@ -113,14 +143,25 @@ func (a *AuthController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": jwtToken})
 }
 
-func (a *AuthController) VerifyEmail(c *gin.Context) {
+// VerifyEmail godoc
+// @Summary Verify user email
+// @Description Validate email verification token
+// @Tags authentication
+// @Produce json
+// @Param token query string true "Verification token"
+// @Success 200 {object} map[string]interface{} "message: Verification success message"
+// @Failure 400 {object} map[string]interface{} "error: Token required"
+// @Failure 404 {object} map[string]interface{} "error: Invalid token"
+// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Router /auth/verify-email [get]
+func (ac *AuthController) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
 	if token == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Token required"})
 		return
 	}
 	var user models.User
-	if err := a.DB.Where("token = ?", token).First(&user).Error; err != nil {
+	if err := ac.DB.Where("token = ?", token).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Invalid token"})
 		return
 	}
@@ -128,7 +169,7 @@ func (a *AuthController) VerifyEmail(c *gin.Context) {
 	user.IsVerified = true
 	user.Token = ""
 
-	if err := a.DB.Save(&user).Error; err != nil {
+	if err := ac.DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating the user"})
 		return
 	}
@@ -144,7 +185,17 @@ func (a *AuthController) VerifyEmail(c *gin.Context) {
 	})
 }
 
-func (a *AuthController) Refresh(c *gin.Context) {
+// Refresh godoc
+// @Summary Refresh JWT token
+// @Description Generate new valid JWT token
+// @Tags authentication
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} map[string]interface{} "token: New JWT string"
+// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
+// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Router /auth/refresh [get]
+func (ac *AuthController) Refresh(c *gin.Context) {
 	userEmail, exists := c.Get("userEmail")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})

@@ -7,6 +7,21 @@ import (
 	"gorm.io/gorm"
 )
 
+// User represents application user
+// @SWG.Definition(
+//
+//	required: ["name", "email", "password"],
+//	properties: {
+//	    "id": {type: "integer", example: 1},
+//	    "name": {type: "string", example: "John Doe", minLength: 2, maxLength: 50},
+//	    "email": {type: "string", format: "email", example: "user@example.com"},
+//	    "image": {type: "string", format: "url", example: "https://example.com/avatar.jpg"},
+//	    "password": {type: "string", format: "password", example: "P@ssw0rd!", minLength: 8},
+//	    "is_verified": {type: "boolean", example: false},
+//	    "token": {type: "string", example: "550e8400-e29b-41d4-a716-446655440000"}
+//	}
+//
+// )
 type User struct {
 	gorm.Model
 	ID         uint   `gorm:"primaryKey" json:"id"`
