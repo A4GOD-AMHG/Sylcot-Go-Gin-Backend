@@ -15,13 +15,13 @@ const (
 
 type Task struct {
 	gorm.Model
-	Title      string   `gorm:"size:100;not null" json:"title" validate:"required,min=3,max=100"`
+	Title      string   `gorm:"size:255;not null;uniqueIndex:idx_user_title" json:"title" validate:"required,min=3,max=255"`
 	Priority   Priority `gorm:"type:varchar(10);default:'medium'" json:"priority"`
 	Status     bool     `gorm:"default:false" json:"status"`
 	CategoryID uint     `gorm:"not null" json:"category_id" validate:"required"`
-	UserID     uint     `gorm:"not null" json:"user_id"`
+	UserID     uint     `gorm:"not null;uniqueIndex:idx_user_title" json:"user_id"`
 	Category   Category `gorm:"foreignKey:CategoryID" json:"category"`
-	User       User     `gorm:"foreignKey:UserID" json:"-"`
+	User       User     `gorm:"foreignKey:UserID" json:"user"`
 }
 
 type TaskRequest struct {
@@ -74,5 +74,11 @@ func GetTaskValidationMessages(err error) map[string][]string {
 }
 
 func MigrateTasks(db *gorm.DB) error {
+
+	err := db.Migrator().CreateIndex(&Task{}, "idx_user_title")
+	if err != nil {
+		return err
+	}
+
 	return db.AutoMigrate(&Task{})
 }

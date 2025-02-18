@@ -15,7 +15,6 @@ import (
 //	    "id": {type: "integer", example: 1},
 //	    "name": {type: "string", example: "John Doe", minLength: 2, maxLength: 50},
 //	    "email": {type: "string", format: "email", example: "user@example.com"},
-//	    "image": {type: "string", format: "url", example: "https://example.com/avatar.jpg"},
 //	    "password": {type: "string", format: "password", example: "P@ssw0rd!", minLength: 8},
 //	    "is_verified": {type: "boolean", example: false},
 //	    "token": {type: "string", example: "550e8400-e29b-41d4-a716-446655440000"}
@@ -24,13 +23,12 @@ import (
 // )
 type User struct {
 	gorm.Model
-	ID         uint   `gorm:"primaryKey" json:"id"`
-	Name       string `gorm:"size:255" json:"name" validate:"required,min=2,max=50"`
-	Email      string `gorm:"unique;size:255" json:"email" validate:"required,email"`
-	Image      string `gorm:"size:255" json:"image" validate:"omitempty,url"`
-	Password   string `gorm:"size:255" json:"password" validate:"required,min=8,password"`
-	IsVerified bool   `gorm:"default:false" json:"is_verified"`
-	Token      string `gorm:"size:255" json:"token"`
+	Name         string `gorm:"size:255" json:"name" validate:"required,min=2,max=50"`
+	Email        string `gorm:"unique;size:255" json:"email" validate:"required,email"`
+	Password     string `gorm:"size:255" json:"password" validate:"required,min=8,password"`
+	IsVerified   bool   `gorm:"default:false" json:"is_verified"`
+	RefreshToken string `gorm:"size:255" json:"refresh_token"`
+	Token        string `gorm:"size:255" json:"token"`
 }
 
 func GetValidationMessages(err error) map[string][]string {

@@ -4,11 +4,19 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
 	"time"
 
+	"github.com/alastor-4/sylcot-go-gin-backend/controllers"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
+
+type CustomClaims struct {
+	Email  string `json:"email"`
+	UserID int    `json:"userId"`
+	jwt.RegisteredClaims
+}
 
 // AuthMiddleware godoc
 // @Security ApiKeyAuth
@@ -26,7 +34,9 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
 		secret := os.Getenv("JWT_SECRET")
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		claims := &CustomClaims{}
+
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil
 		})
 
@@ -36,26 +46,18 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
-			c.Abort()
-			return
-		}
-
-		if email, ok := claims["email"].(string); ok {
-			c.Set("userEmail", email)
-		}
-
-		if exp, ok := claims["exp"].(float64); ok {
-			expirationTime := time.Unix(int64(exp), 0)
-			remaining := time.Until(expirationTime)
-
+		if claims.ExpiresAt != nil {
+			remaining := time.Until(claims.ExpiresAt.Time)
 			if remaining < 5*time.Minute {
-				c.Header("X-Token-Expiring-Soon", "true")
-				c.Header("X-Token-Expiration-Time", expirationTime.Format(time.RFC3339))
+				newTokenString, err := controllers.GenerateJWT(claims.Email, claims.UserID)
+				if err == nil {
+					c.Header("X-Refresh-Token", newTokenString)
+				}
 			}
 		}
+
+		c.Set("userEmail", claims.Email)
+		c.Set("userID", claims.UserID)
 
 		c.Next()
 	}
