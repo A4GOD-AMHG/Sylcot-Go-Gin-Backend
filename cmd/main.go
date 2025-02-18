@@ -55,8 +55,9 @@ func main() {
 
 	ac := &controllers.AuthController{DB: db}
 	tc := &controllers.TaskController{DB: db}
+	cc := &controllers.CategoryController{DB: db}
 
-	router := setupRouter(ac, tc)
+	router := setupRouter(ac, tc, cc)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -64,7 +65,7 @@ func main() {
 	router.Run(":" + port)
 }
 
-func setupRouter(ac *controllers.AuthController, tc *controllers.TaskController) *gin.Engine {
+func setupRouter(ac *controllers.AuthController, tc *controllers.TaskController, cc *controllers.CategoryController) *gin.Engine {
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -74,7 +75,6 @@ func setupRouter(ac *controllers.AuthController, tc *controllers.TaskController)
 		auth.POST("/register", ac.Register)
 		auth.POST("/login", ac.Login)
 		auth.GET("/verify-email/", ac.VerifyEmail)
-		auth.GET("/refresh", ac.Refresh)
 	}
 
 	api := router.Group("/api").Use(middleware.AuthMiddleware())
@@ -84,6 +84,7 @@ func setupRouter(ac *controllers.AuthController, tc *controllers.TaskController)
 		api.PUT("/tasks/:id", tc.UpdateTask)
 		api.DELETE("/tasks/:id", tc.DeleteTask)
 		api.PATCH("/tasks/:id/complete", tc.ToggleTask)
+		api.GET("/categories", cc.GetCategories)
 	}
 
 	return router

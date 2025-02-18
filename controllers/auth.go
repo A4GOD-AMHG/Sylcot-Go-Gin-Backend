@@ -134,7 +134,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	jwtToken, err := generateJWT(user.Email)
+	jwtToken, err := GenerateJWT(user.Email, int(user.ID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate JWT Token"})
 		return
@@ -174,7 +174,7 @@ func (ac *AuthController) VerifyEmail(c *gin.Context) {
 		return
 	}
 
-	_, err := generateJWT(user.Email)
+	_, err := GenerateJWT(user.Email, int(user.ID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating JWT Token"})
 		return
@@ -183,32 +183,6 @@ func (ac *AuthController) VerifyEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": fmt.Sprintf("User with email %s verified successfully", user.Email),
 	})
-}
-
-// Refresh godoc
-// @Summary Refresh JWT token
-// @Description Generate new valid JWT token
-// @Tags authentication
-// @Produce json
-// @Security ApiKeyAuth
-// @Success 200 {object} map[string]interface{} "token: New JWT string"
-// @Failure 401 {object} map[string]interface{} "error: Unauthorized"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
-// @Router /auth/refresh [get]
-func (ac *AuthController) Refresh(c *gin.Context) {
-	userEmail, exists := c.Get("userEmail")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	jwtToken, err := generateJWT(userEmail.(string))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error refreshing JWT Token"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"token": jwtToken})
 }
 
 func getJWTExpiration() time.Duration {
@@ -223,13 +197,14 @@ func getJWTExpiration() time.Duration {
 	return time.Minute * time.Duration(minutes)
 }
 
-func generateJWT(email string) (string, error) {
+func GenerateJWT(email string, id int) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
 	expiration := getJWTExpiration()
 	claims := jwt.MapClaims{
-		"email": email,
-		"iat":   time.Now().Unix(),
-		"exp":   time.Now().Add(expiration).Unix(),
+		"email":  email,
+		"userId": id,
+		"iat":    time.Now().Unix(),
+		"exp":    time.Now().Add(expiration).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
