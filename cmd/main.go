@@ -14,23 +14,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/alastor-4/sylcot-go-gin-backend/controllers"
-	"github.com/alastor-4/sylcot-go-gin-backend/database"
-	"github.com/alastor-4/sylcot-go-gin-backend/models"
-
-	"github.com/alastor-4/sylcot-go-gin-backend/middleware"
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	"gorm.io/gorm"
+	"github.com/alastor-4/sylcot-go-gin-backend/cmd/api"
+	"github.com/alastor-4/sylcot-go-gin-backend/internal/models"
+	"github.com/alastor-4/sylcot-go-gin-backend/pkg/database"
 )
 
-type Repository struct {
-	DB *gorm.DB
-}
-
 func main() {
-
 	config := database.Config{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
@@ -50,42 +39,9 @@ func main() {
 
 	var category models.Category
 	if err := category.Setup(db); err != nil {
-		panic("Failed to seed categories")
+		log.Fatal("Failed to seed categories: ", err)
 	}
 
-	ac := &controllers.AuthController{DB: db}
-	tc := &controllers.TaskController{DB: db}
-	cc := &controllers.CategoryController{DB: db}
-
-	router := setupRouter(ac, tc, cc)
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	router.Run(":" + port)
-}
-
-func setupRouter(ac *controllers.AuthController, tc *controllers.TaskController, cc *controllers.CategoryController) *gin.Engine {
-
-	router := gin.Default()
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	auth := router.Group("/auth")
-	{
-		auth.POST("/register", ac.Register)
-		auth.POST("/login", ac.Login)
-		auth.GET("/verify-email/", ac.VerifyEmail)
-	}
-
-	api := router.Group("/api").Use(middleware.AuthMiddleware())
-	{
-		api.GET("/tasks", tc.GetTasks)
-		api.POST("/tasks", tc.CreateTask)
-		api.PUT("/tasks/:id", tc.UpdateTask)
-		api.DELETE("/tasks/:id", tc.DeleteTask)
-		api.PATCH("/tasks/:id/complete", tc.ToggleTask)
-		api.GET("/categories", cc.GetCategories)
-	}
-
-	return router
+	app := api.NewApp(db)
+	app.Run()
 }

@@ -29,6 +29,7 @@ type User struct {
 	IsVerified   bool   `gorm:"default:false" json:"is_verified"`
 	RefreshToken string `gorm:"size:255" json:"refresh_token"`
 	Token        string `gorm:"size:255" json:"token"`
+	ResetToken   string `gorm:"size:255" json:"reset_token"`
 }
 
 func GetValidationMessages(err error) map[string][]string {
