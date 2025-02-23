@@ -189,3 +189,101 @@ func (ah *AuthHandler) VerifyEmail(c *gin.Context) {
 		"message": fmt.Sprintf("User with email %s verified successfully", user.Email),
 	})
 }
+
+// ForgotPassword godoc
+// @Summary Request password reset
+// @Description Send a password reset email with a token
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param email body map[string]string true "Email for password reset"
+// @Success 200 {object} map[string]interface{} "message: Reset email sent"
+// @Failure 400 {object} map[string]interface{} "error: Invalid email"
+// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Router /auth/forgot-password [post]
+func (ah *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+		return
+	}
+
+	user, err := ah.Repo.FindByEmail(req.Email)
+	if err != nil {
+
+		c.JSON(http.StatusOK, gin.H{"message": "If an account exists, a reset link has been sent"})
+		return
+	}
+
+	resetToken := uuid.NewString()
+	user.ResetToken = resetToken
+	if err := ah.Repo.UpdateUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate reset token"})
+		return
+	}
+
+	resetLink := "http://localhost:8080/auth/reset-password?token=" + resetToken
+	if err := utils.SendResetPasswordEmail(user.Email, resetLink); err != nil {
+		log.Printf("Error sending reset email to %s: %v", user.Email, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send reset email"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "If an account exists, a reset link has been sent"})
+}
+
+// ResetPassword godoc
+// @Summary Reset password
+// @Description Validate token and update the password
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param resetData body map[string]string true "Token, new password and confirmation"
+// @Success 200 {object} map[string]interface{} "message: Password updated successfully"
+// @Failure 400 {object} map[string]interface{} "error: Invalid data or token"
+// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Router /auth/reset-password [post]
+func (ah *AuthHandler) ResetPassword(c *gin.Context) {
+	var req struct {
+		Token           string `json:"token" binding:"required"`
+		NewPassword     string `json:"new_password" binding:"required,min=8,password"`
+		ConfirmPassword string `json:"confirm_password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
+		return
+	}
+
+	if req.NewPassword != req.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Passwords do not match"})
+		return
+	}
+
+	// Use the new repository method to find by reset token
+	user, err := ah.Repo.FindByResetToken(req.Token)
+	if err != nil {
+		if errors.Is(err, repositories.ErrTokenNotFound) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid or expired token"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
+		}
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error encrypting password"})
+		return
+	}
+
+	user.Password = string(hashedPassword)
+	user.ResetToken = ""
+	if err := ah.Repo.UpdateUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Password successfully updated for %s", user.Email)})
+}

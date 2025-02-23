@@ -17,6 +17,7 @@ var (
 type AuthRepository interface {
 	FindByEmail(email string) (*models.User, error)
 	FindByToken(token string) (*models.User, error)
+	FindByResetToken(token string) (*models.User, error)
 	CreateUser(user *models.User) error
 	UpdateUser(user *models.User) error
 }
@@ -44,6 +45,18 @@ func (r *authRepository) FindByEmail(email string) (*models.User, error) {
 func (r *authRepository) FindByToken(token string) (*models.User, error) {
 	var user models.User
 	err := r.db.Where("token = ?", token).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrTokenNotFound
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *authRepository) FindByResetToken(token string) (*models.User, error) {
+	var user models.User
+	err := r.db.Where("reset_token = ?", token).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrTokenNotFound
