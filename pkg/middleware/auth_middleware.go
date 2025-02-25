@@ -7,7 +7,7 @@ import (
 
 	"time"
 
-	"github.com/alastor-4/sylcot-go-gin-backend/pkg/utils"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )

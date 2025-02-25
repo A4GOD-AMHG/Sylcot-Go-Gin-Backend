@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/alastor-4/sylcot-go-gin-backend/internal/handlers"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/handlers"
 	"github.com/gin-gonic/gin"
 )
 

@@ -14,9 +14,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/alastor-4/sylcot-go-gin-backend/cmd/api"
-	"github.com/alastor-4/sylcot-go-gin-backend/internal/models"
-	"github.com/alastor-4/sylcot-go-gin-backend/pkg/database"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/cmd/api"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/models"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/pkg/database"
 )
 
 func main() {

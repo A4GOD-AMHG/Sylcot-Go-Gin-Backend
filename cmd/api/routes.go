@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/alastor-4/sylcot-go-gin-backend/internal/handlers"
-	"github.com/alastor-4/sylcot-go-gin-backend/pkg/middleware"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/handlers"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

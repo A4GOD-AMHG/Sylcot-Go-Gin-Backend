@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alastor-4/sylcot-go-gin-backend/internal/models"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/models"
 	"gorm.io/gorm"
 )
 

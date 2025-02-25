@@ -1,4 +1,4 @@
-module github.com/alastor-4/sylcot-go-gin-backend
+module github.com/A4GOD-AMHG/sylcot-go-gin-backend
 
 go 1.24
 
