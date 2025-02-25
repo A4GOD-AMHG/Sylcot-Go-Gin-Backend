@@ -49,10 +49,11 @@ func (tr *taskRepository) GetTasksByUserID(userID int, categoryID string, status
 	}
 
 	if status != "" {
-		if _, err := strconv.ParseBool(status); err != nil {
+		parsedStatus, err := strconv.ParseBool(status)
+		if err != nil {
 			return nil, ErrInvalidFilter
 		}
-		query = query.Where("status = ?", status)
+		query = query.Where("status = ?", parsedStatus)
 	}
 
 	if priority != "" {

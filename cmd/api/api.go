@@ -3,8 +3,8 @@ package api
 import (
 	"os"
 
-	"github.com/alastor-4/sylcot-go-gin-backend/internal/handlers"
-	"github.com/alastor-4/sylcot-go-gin-backend/internal/repositories"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/handlers"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/repositories"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

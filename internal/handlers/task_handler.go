@@ -202,7 +202,7 @@ func (th *TaskHandler) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Task %d deleted", id)})
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Task %d deleted successfully", id)})
 }
 
 // ToggleTask godoc
