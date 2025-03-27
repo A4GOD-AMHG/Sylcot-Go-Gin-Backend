@@ -1,0 +1,505 @@
+definitions:
+  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category:
+    properties:
+      color:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      icon_name:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority:
+    enum:
+    - high
+    - medium
+    - low
+    type: string
+    x-enum-varnames:
+    - High
+    - Medium
+    - Low
+  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task:
+    properties:
+      category:
+        $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category'
+      category_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      priority:
+        $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority'
+      status:
+        type: boolean
+      title:
+        maxLength: 255
+        minLength: 3
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User'
+      user_id:
+        type: integer
+    required:
+    - category_id
+    - title
+    type: object
+  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest:
+    properties:
+      category_id:
+        type: integer
+      priority:
+        allOf:
+        - $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority'
+        enum:
+        - high
+        - medium
+        - low
+      title:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - category_id
+    - title
+    type: object
+  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      name:
+        maxLength: 50
+        minLength: 2
+        type: string
+      password:
+        minLength: 8
+        type: string
+      refresh_token:
+        type: string
+      reset_token:
+        type: string
+      token:
+        type: string
+      updatedAt:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  internal_handlers.LoginRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+    type: object
+info:
+  contact:
+    email: alexismhgarcia@gmail.com
+  description: Sylcot, that is an acronym for Simplify Your Life by Crossing Out Tasks,
+    it is Task management API to manage your priorities, with a little more functionality
+    and complexity, like JWT authentication
+  title: Sylcot API
+  version: "1.0"
+paths:
+  /api/categories:
+    get:
+      description: Get all categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get categories
+      tags:
+      - categories
+  /api/tasks:
+    get:
+      description: Get tasks with optional filters for category, status, and priority
+      parameters:
+      - description: Filter by category ID
+        in: query
+        name: categoryId
+        type: integer
+      - description: Filter by completion status (true/false)
+        in: query
+        name: status
+        type: boolean
+      - description: Filter by priority (high/medium/low)
+        enum:
+        - high
+        - medium
+        - low
+        in: query
+        name: priority
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get filtered tasks
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Create a new task for the authenticated user
+      parameters:
+      - description: Task creation data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              details:
+                type: object
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new task
+      tags:
+      - tasks
+  /api/tasks/{id}:
+    delete:
+      description: Permanently delete a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a task
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: Update an existing task's details
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Task update data
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update a task
+      tags:
+      - tasks
+  /api/tasks/{id}/complete:
+    patch:
+      description: Toggle a task's completion status
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Toggle task status
+      tags:
+      - tasks
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send a password reset email with a token
+      parameters:
+      - description: Email for password reset
+        in: body
+        name: email
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Reset email sent'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 'error: Invalid email'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Request password reset
+      tags:
+      - authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 'message: User registered successfully...'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 'error: Validation failed, details: field errors'
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: 'error: User already exists'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register new user
+      tags:
+      - authentication
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Validate token and update the password
+      parameters:
+      - description: Token, new password and confirmation
+        in: body
+        name: resetData
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Password updated successfully'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 'error: Invalid data or token'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Reset password
+      tags:
+      - authentication
+  /auth/verify-email:
+    get:
+      description: Validate email verification token
+      parameters:
+      - description: Verification token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: Verification success message'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 'error: Token required'
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 'error: Invalid token'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'error: Internal server error'
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Verify user email
+      tags:
+      - authentication
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -15,6 +15,7 @@ import (
 	"os"
 
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/cmd/api"
+	_ "github.com/A4GOD-AMHG/sylcot-go-gin-backend/docs"
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/models"
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/pkg/database"
 )
