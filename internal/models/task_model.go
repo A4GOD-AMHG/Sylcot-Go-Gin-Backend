@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
@@ -13,17 +15,50 @@ const (
 	Low    Priority = "low"
 )
 
+// Task represents a user task
+// @SWG.Definition(
+//
+//	required: ["title", "priority", "category_id", "user_id"],
+//	properties: {
+//	    "id": {type: "integer", example: 1},
+//	    "created_at": {type: "string", format: "date-time", example: "2025-03-27T14:45:46Z"},
+//	    "updated_at": {type: "string", format: "date-time", example: "2025-03-27T14:45:46Z"},
+//	    "deleted_at": {type: "string", format: "date-time", example: "null", x-nullable: true},
+//	    "title": {type: "string", example: "Complete project report", minLength: 3, maxLength: 255},
+//	    "priority": {type: "string", enum: ["high", "medium", "low"], example: "medium"},
+//	    "status": {type: "boolean", example: false},
+//	    "category_id": {type: "integer", example: 2},
+//	    "user_id": {type: "integer", example: 1},
+//	    "category": {"$ref": "#/definitions/Category"},
+//	    "user": {"$ref": "#/definitions/User"}
+//	}
+//
+// )
 type Task struct {
-	gorm.Model
-	Title      string   `gorm:"size:255;not null;uniqueIndex:idx_user_title" json:"title" validate:"required,min=3,max=255"`
-	Priority   Priority `gorm:"type:varchar(10);default:'medium'" json:"priority"`
-	Status     bool     `gorm:"default:false" json:"status"`
-	CategoryID uint     `gorm:"not null" json:"category_id" validate:"required"`
-	UserID     uint     `gorm:"not null;uniqueIndex:idx_user_title" json:"user_id"`
-	Category   Category `gorm:"foreignKey:CategoryID" json:"category"`
-	User       User     `gorm:"foreignKey:UserID" json:"user"`
+	ID         uint       `gorm:"primaryKey" json:"id"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	DeletedAt  *time.Time `gorm:"index" json:"deleted_at"`
+	Title      string     `gorm:"size:255;not null;uniqueIndex:idx_user_title" json:"title" validate:"required,min=3,max=255"`
+	Priority   Priority   `gorm:"type:varchar(10);default:'medium'" json:"priority"`
+	Status     bool       `gorm:"default:false" json:"status"`
+	CategoryID uint       `gorm:"not null" json:"category_id" validate:"required"`
+	UserID     uint       `gorm:"not null;uniqueIndex:idx_user_title" json:"user_id"`
+	Category   Category   `gorm:"foreignKey:CategoryID" json:"category"`
+	User       User       `gorm:"foreignKey:UserID" json:"user"`
 }
 
+// TaskRequest represents the payload for creating/updating a task
+// @SWG.Definition(
+//
+//	required: ["title", "category_id"],
+//	properties: {
+//	    "title": {type: "string", example: "Buy groceries", minLength: 3, maxLength: 100},
+//	    "priority": {type: "string", enum: ["high", "medium", "low"], example: "medium"},
+//	    "category_id": {type: "integer", example: 3}
+//	}
+//
+// )
 type TaskRequest struct {
 	Title      string   `json:"title" validate:"required,min=3,max=100"`
 	Priority   Priority `json:"priority" validate:"oneof=high medium low"`

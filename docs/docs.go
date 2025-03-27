@@ -38,7 +38,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category"
+                                "$ref": "#/definitions/models.Category"
                             }
                         }
                     },
@@ -102,7 +102,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task"
+                                "$ref": "#/definitions/models.Task"
                             }
                         }
                     },
@@ -143,7 +143,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest"
+                            "$ref": "#/definitions/models.TaskRequest"
                         }
                     }
                 ],
@@ -151,7 +151,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task"
+                            "$ref": "#/definitions/models.Task"
                         }
                     },
                     "400": {
@@ -214,7 +214,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest"
+                            "$ref": "#/definitions/models.TaskRequest"
                         }
                     }
                 ],
@@ -222,7 +222,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task"
+                            "$ref": "#/definitions/models.Task"
                         }
                     },
                     "400": {
@@ -340,7 +340,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task"
+                            "$ref": "#/definitions/models.Task"
                         }
                     },
                     "404": {
@@ -440,7 +440,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 ],
@@ -581,17 +581,30 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category": {
+        "handlers.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "password123"
+                }
+            }
+        },
+        "models.Category": {
             "type": "object",
             "properties": {
                 "color": {
                     "type": "string"
                 },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
+                "deleted_at": {
+                    "type": "string"
                 },
                 "icon_name": {
                     "type": "string"
@@ -602,12 +615,12 @@ const docTemplate = `{
                 "title": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority": {
+        "models.Priority": {
             "type": "string",
             "enum": [
                 "high",
@@ -620,7 +633,7 @@ const docTemplate = `{
                 "Low"
             ]
         },
-        "github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task": {
+        "models.Task": {
             "type": "object",
             "required": [
                 "category_id",
@@ -628,22 +641,22 @@ const docTemplate = `{
             ],
             "properties": {
                 "category": {
-                    "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category"
+                    "$ref": "#/definitions/models.Category"
                 },
                 "category_id": {
                     "type": "integer"
                 },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
+                "deleted_at": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "priority": {
-                    "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority"
+                    "$ref": "#/definitions/models.Priority"
                 },
                 "status": {
                     "type": "boolean"
@@ -653,18 +666,18 @@ const docTemplate = `{
                     "maxLength": 255,
                     "minLength": 3
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User"
+                    "$ref": "#/definitions/models.User"
                 },
                 "user_id": {
                     "type": "integer"
                 }
             }
         },
-        "github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest": {
+        "models.TaskRequest": {
             "type": "object",
             "required": [
                 "category_id",
@@ -682,7 +695,7 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority"
+                            "$ref": "#/definitions/models.Priority"
                         }
                     ]
                 },
@@ -693,7 +706,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User": {
+        "models.User": {
             "type": "object",
             "required": [
                 "email",
@@ -701,11 +714,11 @@ const docTemplate = `{
                 "password"
             ],
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
+                "deleted_at": {
+                    "type": "string"
                 },
                 "email": {
                     "type": "string"
@@ -734,33 +747,8 @@ const docTemplate = `{
                 "token": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
-                }
-            }
-        },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
-        "internal_handlers.LoginRequest": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
-                },
-                "password": {
-                    "type": "string",
-                    "example": "password123"
                 }
             }
         }

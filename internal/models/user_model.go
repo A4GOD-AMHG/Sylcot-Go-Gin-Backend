@@ -1,6 +1,7 @@
 package models
 
 import (
+	"time"
 	"unicode"
 
 	"github.com/go-playground/validator/v10"
@@ -10,26 +11,32 @@ import (
 // User represents application user
 // @SWG.Definition(
 //
-//	required: ["name", "email", "password"],
-//	properties: {
-//	    "id": {type: "integer", example: 1},
-//	    "name": {type: "string", example: "John Doe", minLength: 2, maxLength: 50},
-//	    "email": {type: "string", format: "email", example: "user@example.com"},
-//	    "password": {type: "string", format: "password", example: "P@ssw0rd!", minLength: 8},
-//	    "is_verified": {type: "boolean", example: false},
-//	    "token": {type: "string", example: "550e8400-e29b-41d4-a716-446655440000"}
-//	}
+//		required: ["name", "email", "password"],
+//		properties: {
+//		    "id": {type: "integer", example: 1},
+//	     "createdAt": {type: "string", format: "date-time", example: "2025-03-27T14:45:46Z"},
+//	     "updatedAt": {type: "string", format: "date-time", example: "2025-03-27T14:45:46Z"},
+//	     "deletedAt": {type: "string", format: "date-time", example: "null", x-nullable: true},
+//		    "name": {type: "string", example: "John Doe", minLength: 2, maxLength: 50},
+//		    "email": {type: "string", format: "email", example: "user@example.com"},
+//		    "password": {type: "string", format: "password", example: "P@ssw0rd!", minLength: 8},
+//		    "is_verified": {type: "boolean", example: false},
+//		    "token": {type: "string", example: "550e8400-e29b-41d4-a716-446655440000"}
+//		}
 //
 // )
 type User struct {
-	gorm.Model
-	Name         string `gorm:"size:255" json:"name" validate:"required,min=2,max=50"`
-	Email        string `gorm:"unique;size:255" json:"email" validate:"required,email"`
-	Password     string `gorm:"size:255" json:"password" validate:"required,min=8,password"`
-	IsVerified   bool   `gorm:"default:false" json:"is_verified"`
-	RefreshToken string `gorm:"size:255" json:"refresh_token"`
-	Token        string `gorm:"size:255" json:"token"`
-	ResetToken   string `gorm:"size:255" json:"reset_token"`
+	ID           uint       `gorm:"primaryKey" json:"id"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	DeletedAt    *time.Time `gorm:"index" json:"deleted_at"`
+	Name         string     `gorm:"size:255" json:"name" validate:"required,min=2,max=50"`
+	Email        string     `gorm:"unique;size:255" json:"email" validate:"required,email"`
+	Password     string     `gorm:"size:255" json:"password" validate:"required,min=8,password"`
+	IsVerified   bool       `gorm:"default:false" json:"is_verified"`
+	RefreshToken string     `gorm:"size:255" json:"refresh_token"`
+	Token        string     `gorm:"size:255" json:"token"`
+	ResetToken   string     `gorm:"size:255" json:"reset_token"`
 }
 
 func GetValidationMessages(err error) map[string][]string {

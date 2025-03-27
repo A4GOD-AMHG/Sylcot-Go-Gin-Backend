@@ -1,22 +1,31 @@
 definitions:
-  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category:
+  handlers.LoginRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+    type: object
+  models.Category:
     properties:
       color:
         type: string
-      createdAt:
+      created_at:
         type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
+      deleted_at:
+        type: string
       icon_name:
         type: string
       id:
         type: integer
       title:
         type: string
-      updatedAt:
+      updated_at:
         type: string
     type: object
-  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority:
+  models.Priority:
     enum:
     - high
     - medium
@@ -26,43 +35,43 @@ definitions:
     - High
     - Medium
     - Low
-  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task:
+  models.Task:
     properties:
       category:
-        $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category'
+        $ref: '#/definitions/models.Category'
       category_id:
         type: integer
-      createdAt:
+      created_at:
         type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
+      deleted_at:
+        type: string
       id:
         type: integer
       priority:
-        $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority'
+        $ref: '#/definitions/models.Priority'
       status:
         type: boolean
       title:
         maxLength: 255
         minLength: 3
         type: string
-      updatedAt:
+      updated_at:
         type: string
       user:
-        $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User'
+        $ref: '#/definitions/models.User'
       user_id:
         type: integer
     required:
     - category_id
     - title
     type: object
-  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest:
+  models.TaskRequest:
     properties:
       category_id:
         type: integer
       priority:
         allOf:
-        - $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Priority'
+        - $ref: '#/definitions/models.Priority'
         enum:
         - high
         - medium
@@ -75,12 +84,12 @@ definitions:
     - category_id
     - title
     type: object
-  github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User:
+  models.User:
     properties:
-      createdAt:
+      created_at:
         type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
+      deleted_at:
+        type: string
       email:
         type: string
       id:
@@ -100,29 +109,12 @@ definitions:
         type: string
       token:
         type: string
-      updatedAt:
+      updated_at:
         type: string
     required:
     - email
     - name
     - password
-    type: object
-  gorm.DeletedAt:
-    properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
-    type: object
-  internal_handlers.LoginRequest:
-    properties:
-      email:
-        example: user@example.com
-        type: string
-      password:
-        example: password123
-        type: string
     type: object
 info:
   contact:
@@ -143,7 +135,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Category'
+              $ref: '#/definitions/models.Category'
             type: array
         "500":
           description: Internal Server Error
@@ -184,7 +176,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+              $ref: '#/definitions/models.Task'
             type: array
         "500":
           description: Internal Server Error
@@ -208,14 +200,14 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest'
+          $ref: '#/definitions/models.TaskRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+            $ref: '#/definitions/models.Task'
         "400":
           description: Bad Request
           schema:
@@ -285,14 +277,14 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.TaskRequest'
+          $ref: '#/definitions/models.TaskRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+            $ref: '#/definitions/models.Task'
         "400":
           description: Bad Request
           schema:
@@ -334,7 +326,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.Task'
+            $ref: '#/definitions/models.Task'
         "404":
           description: Not Found
           schema:
@@ -400,7 +392,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/github_com_A4GOD-AMHG_sylcot-go-gin-backend_internal_models.User'
+          $ref: '#/definitions/models.User'
       produces:
       - application/json
       responses:
