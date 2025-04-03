@@ -8,21 +8,39 @@ definitions:
         example: password123
         type: string
     type: object
-  models.Category:
+  handlers.RegisterRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      name:
+        example: John Doe
+        type: string
+      password:
+        example: password123
+        type: string
+    type: object
+  handlers.ResetPasswordRequest:
+    properties:
+      new_password:
+        example: password123
+        minLength: 8
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  models.CategoryDTO:
     properties:
       color:
-        type: string
-      created_at:
-        type: string
-      deleted_at:
         type: string
       icon_name:
         type: string
       id:
         type: integer
       title:
-        type: string
-      updated_at:
         type: string
     type: object
   models.Priority:
@@ -35,16 +53,10 @@ definitions:
     - High
     - Medium
     - Low
-  models.Task:
+  models.TaskDTO:
     properties:
       category:
-        $ref: '#/definitions/models.Category'
-      category_id:
-        type: integer
-      created_at:
-        type: string
-      deleted_at:
-        type: string
+        $ref: '#/definitions/models.CategoryDTO'
       id:
         type: integer
       priority:
@@ -52,18 +64,7 @@ definitions:
       status:
         type: boolean
       title:
-        maxLength: 255
-        minLength: 3
         type: string
-      updated_at:
-        type: string
-      user:
-        $ref: '#/definitions/models.User'
-      user_id:
-        type: integer
-    required:
-    - category_id
-    - title
     type: object
   models.TaskRequest:
     properties:
@@ -84,37 +85,14 @@ definitions:
     - category_id
     - title
     type: object
-  models.User:
+  models.UserDTO:
     properties:
-      created_at:
-        type: string
-      deleted_at:
-        type: string
       email:
         type: string
       id:
         type: integer
-      is_verified:
-        type: boolean
       name:
-        maxLength: 50
-        minLength: 2
         type: string
-      password:
-        minLength: 8
-        type: string
-      refresh_token:
-        type: string
-      reset_token:
-        type: string
-      token:
-        type: string
-      updated_at:
-        type: string
-    required:
-    - email
-    - name
-    - password
     type: object
 info:
   contact:
@@ -135,7 +113,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Category'
+              $ref: '#/definitions/models.CategoryDTO'
             type: array
         "500":
           description: Internal Server Error
@@ -176,7 +154,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Task'
+              $ref: '#/definitions/models.TaskDTO'
             type: array
         "500":
           description: Internal Server Error
@@ -207,7 +185,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Task'
+            $ref: '#/definitions/models.TaskDTO'
         "400":
           description: Bad Request
           schema:
@@ -284,7 +262,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Task'
+            $ref: '#/definitions/models.TaskDTO'
         "400":
           description: Bad Request
           schema:
@@ -326,7 +304,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Task'
+            $ref: '#/definitions/models.TaskDTO'
         "404":
           description: Not Found
           schema:
@@ -350,35 +328,97 @@ paths:
     post:
       consumes:
       - application/json
-      description: Send a password reset email with a token
+      description: Send password reset instructions to email
       parameters:
-      - description: Email for password reset
+      - description: Registered email address
         in: body
         name: email
         required: true
         schema:
-          additionalProperties:
-            type: string
+          properties:
+            email:
+              type: string
           type: object
       produces:
       - application/json
       responses:
         "200":
-          description: 'message: Reset email sent'
+          description: OK
           schema:
-            additionalProperties: true
+            properties:
+              message:
+                type: string
             type: object
         "400":
-          description: 'error: Invalid email'
+          description: Bad Request
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
         "500":
-          description: 'error: Internal server error'
+          description: Internal Server Error
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
       summary: Request password reset
+      tags:
+      - authentication
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token and user info
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              token:
+                type: string
+              user:
+                $ref: '#/definitions/models.UserDTO'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: User login
       tags:
       - authentication
   /auth/register:
@@ -392,29 +432,39 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/handlers.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: 'message: User registered successfully...'
+          description: Created
           schema:
-            additionalProperties: true
+            properties:
+              message:
+                type: string
             type: object
         "400":
-          description: 'error: Validation failed, details: field errors'
+          description: Bad Request
           schema:
-            additionalProperties: true
+            properties:
+              details:
+                type: object
+              error:
+                type: string
             type: object
         "409":
-          description: 'error: User already exists'
+          description: Conflict
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
         "500":
-          description: 'error: Internal server error'
+          description: Internal Server Error
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
       summary: Register new user
       tags:
@@ -423,42 +473,46 @@ paths:
     post:
       consumes:
       - application/json
-      description: Validate token and update the password
+      description: Set new password using reset token
       parameters:
-      - description: Token, new password and confirmation
+      - description: Reset password data
         in: body
         name: resetData
         required: true
         schema:
-          additionalProperties:
-            type: string
-          type: object
+          $ref: '#/definitions/handlers.ResetPasswordRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: 'message: Password updated successfully'
+          description: OK
           schema:
-            additionalProperties: true
+            properties:
+              message:
+                type: string
             type: object
         "400":
-          description: 'error: Invalid data or token'
+          description: Bad Request
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
         "500":
-          description: 'error: Internal server error'
+          description: Internal Server Error
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
-      summary: Reset password
+      summary: Reset user password
       tags:
       - authentication
   /auth/verify-email:
     get:
       description: Validate email verification token
       parameters:
-      - description: Verification token
+      - description: Verification token from email
         in: query
         name: token
         required: true
@@ -467,24 +521,32 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'message: Verification success message'
+          description: OK
           schema:
-            additionalProperties: true
+            properties:
+              message:
+                type: string
             type: object
         "400":
-          description: 'error: Token required'
+          description: Bad Request
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
         "404":
-          description: 'error: Invalid token'
+          description: Not Found
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
         "500":
-          description: 'error: Internal server error'
+          description: Internal Server Error
           schema:
-            additionalProperties: true
+            properties:
+              error:
+                type: string
             type: object
       summary: Verify user email
       tags:

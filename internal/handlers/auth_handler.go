@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	_ "github.com/A4GOD-AMHG/sylcot-go-gin-backend/docs"
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/models"
@@ -19,17 +20,23 @@ type AuthHandler struct {
 	Repo repositories.AuthRepository
 }
 
+type RegisterRequest struct {
+	Name     string `json:"name" example:"John Doe"`
+	Email    string `json:"email" example:"user@example.com"`
+	Password string `json:"password" example:"Password*1"`
+}
+
 // Register godoc
 // @Summary Register new user
 // @Description Create a new user account
 // @Tags authentication
 // @Accept json
 // @Produce json
-// @Param user body models.User true "Registration data"
-// @Success 201 {object} map[string]interface{} "message: User registered successfully..."
-// @Failure 400 {object} map[string]interface{} "error: Validation failed, details: field errors"
-// @Failure 409 {object} map[string]interface{} "error: User already exists"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Param user body RegisterRequest true "Registration data"
+// @Success 201 {object} object{message=string}
+// @Failure 400 {object} object{error=string,details=object}
+// @Failure 409 {object} object{error=string}
+// @Failure 500 {object} object{error=string}
 // @Router /auth/register [post]
 func (ah *AuthHandler) Register(c *gin.Context) {
 	var user models.User
@@ -82,7 +89,7 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	verificationLink := "http://localhost:8080/auth/verify-email?token=" + newUser.Token
+	verificationLink := os.Getenv("API_URL") + "/auth/verify-email?token=" + newUser.Token
 	if err := utils.SendVerificationEmail(user.Email, verificationLink); err != nil {
 		log.Printf("Could not send verification email to %s: %v", user.Email, err)
 	}
@@ -94,22 +101,23 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 
 type LoginRequest struct {
 	Email    string `json:"email" example:"user@example.com"`
-	Password string `json:"password" example:"password123"`
+	Password string `json:"password" example:"Password*1"`
 }
 
 // Login godoc
 // @Summary User login
-// @Description Authenticate user and return JWT token
+// @Description Authenticate user and return JWT token and user info
 // @Tags authentication
 // @Accept json
 // @Produce json
 // @Param credentials body LoginRequest true "Login credentials"
-// @Success 200 {object} map[string]interface{} "token: JWT string"
-// @Failure 400 {object} map[string]interface{} "error: Invalid data"
-// @Failure 401 {object} map[string]interface{} "error: Invalid credentials"
-// @Failure 403 {object} map[string]interface{} "error: Email not verified"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Success 200 {object} object{token=string,user=models.UserDTO}
+// @Failure 400 {object} object{error=string}
+// @Failure 401 {object} object{error=string}
+// @Failure 403 {object} object{error=string}
+// @Failure 500 {object} object{error=string}
 // @Router /auth/login [post]
+// Ejemplo de request:
 func (ah *AuthHandler) Login(c *gin.Context) {
 	var loginData struct {
 		Email    string `json:"email"`
@@ -157,11 +165,11 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 // @Description Validate email verification token
 // @Tags authentication
 // @Produce json
-// @Param token query string true "Verification token"
-// @Success 200 {object} map[string]interface{} "message: Verification success message"
-// @Failure 400 {object} map[string]interface{} "error: Token required"
-// @Failure 404 {object} map[string]interface{} "error: Invalid token"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Param token query string true "Verification token from email"
+// @Success 200 {object} object{message=string}
+// @Failure 400 {object} object{error=string}
+// @Failure 404 {object} object{error=string}
+// @Failure 500 {object} object{error=string}
 // @Router /auth/verify-email [get]
 func (ah *AuthHandler) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
@@ -195,14 +203,14 @@ func (ah *AuthHandler) VerifyEmail(c *gin.Context) {
 
 // ForgotPassword godoc
 // @Summary Request password reset
-// @Description Send a password reset email with a token
+// @Description Send password reset instructions to email
 // @Tags authentication
 // @Accept json
 // @Produce json
-// @Param email body map[string]string true "Email for password reset"
-// @Success 200 {object} map[string]interface{} "message: Reset email sent"
-// @Failure 400 {object} map[string]interface{} "error: Invalid email"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Param email body object{email=string} true "Registered email address"
+// @Success 200 {object} object{message=string}
+// @Failure 400 {object} object{error=string}
+// @Failure 500 {object} object{error=string}
 // @Router /auth/forgot-password [post]
 func (ah *AuthHandler) ForgotPassword(c *gin.Context) {
 	var req struct {
@@ -227,7 +235,7 @@ func (ah *AuthHandler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	resetLink := "http://localhost:8080/auth/reset-password?token=" + resetToken
+	resetLink := os.Getenv("API_URL") + "/auth/reset-password?token=" + resetToken
 	if err := utils.SendResetPasswordEmail(user.Email, resetLink); err != nil {
 		log.Printf("Error sending reset email to %s: %v", user.Email, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send reset email"})
@@ -237,34 +245,32 @@ func (ah *AuthHandler) ForgotPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "If an account exists, a reset link has been sent"})
 }
 
+type ResetPasswordRequest struct {
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8,password" example:"Password*1"`
+}
+
 // ResetPassword godoc
-// @Summary Reset password
-// @Description Validate token and update the password
+// @Summary Reset user password
+// @Description Set new password using reset token
 // @Tags authentication
 // @Accept json
 // @Produce json
-// @Param resetData body map[string]string true "Token, new password and confirmation"
-// @Success 200 {object} map[string]interface{} "message: Password updated successfully"
-// @Failure 400 {object} map[string]interface{} "error: Invalid data or token"
-// @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Param resetData body ResetPasswordRequest true "Reset password data"
+// @Success 200 {object} object{message=string}
+// @Failure 400 {object} object{error=string}
+// @Failure 500 {object} object{error=string}
 // @Router /auth/reset-password [post]
 func (ah *AuthHandler) ResetPassword(c *gin.Context) {
 	var req struct {
-		Token           string `json:"token" binding:"required"`
-		NewPassword     string `json:"new_password" binding:"required,min=8,password"`
-		ConfirmPassword string `json:"confirm_password" binding:"required"`
+		Token       string `json:"token" binding:"required"`
+		NewPassword string `json:"new_password" binding:"required,min=8,password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
 		return
 	}
 
-	if req.NewPassword != req.ConfirmPassword {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Passwords do not match"})
-		return
-	}
-
-	// Use the new repository method to find by reset token
 	user, err := ah.Repo.FindByResetToken(req.Token)
 	if err != nil {
 		if errors.Is(err, repositories.ErrTokenNotFound) {
