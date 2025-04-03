@@ -109,6 +109,7 @@ type LoginRequest struct {
 // @Failure 401 {object} map[string]interface{} "error: Invalid credentials"
 // @Failure 403 {object} map[string]interface{} "error: Email not verified"
 // @Failure 500 {object} map[string]interface{} "error: Internal server error"
+// @Router /auth/login [post]
 func (ah *AuthHandler) Login(c *gin.Context) {
 	var loginData struct {
 		Email    string `json:"email"`
@@ -146,7 +147,9 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": jwtToken})
+	userDTO := user.ToDTO()
+
+	c.JSON(http.StatusOK, gin.H{"token": jwtToken, "user": userDTO})
 }
 
 // VerifyEmail godoc

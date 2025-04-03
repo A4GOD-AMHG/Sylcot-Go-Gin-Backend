@@ -28,7 +28,7 @@ func NewTaskHandler(repo repositories.TaskRepository) *TaskHandler {
 // @Param status query boolean false "Filter by completion status (true/false)"
 // @Param priority query string false "Filter by priority (high/medium/low)" Enums(high, medium, low)
 // @Security ApiKeyAuth
-// @Success 200 {array} models.Task
+// @Success 200 {array} models.TaskDTO
 // @Failure 500 {object} object{error=string}
 // @Router /api/tasks [get]
 func (th *TaskHandler) GetTasks(c *gin.Context) {
@@ -47,7 +47,12 @@ func (th *TaskHandler) GetTasks(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, tasks)
+	var taskDTOs []*models.TaskDTO
+	for _, task := range tasks {
+		taskDTOs = append(taskDTOs, task.ToDTO())
+	}
+
+	c.JSON(http.StatusOK, taskDTOs)
 }
 
 // CreateTask godoc
@@ -58,7 +63,7 @@ func (th *TaskHandler) GetTasks(c *gin.Context) {
 // @Produce json
 // @Param task body models.TaskRequest true "Task creation data"
 // @Security ApiKeyAuth
-// @Success 201 {object} models.Task
+// @Success 201 {object} models.TaskDTO
 // @Failure 400 {object} object{error=string,details=object}
 // @Failure 500 {object} object{error=string}
 // @Router /api/tasks [post]
@@ -107,7 +112,7 @@ func (th *TaskHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, newTask)
+	c.JSON(http.StatusCreated, newTask.ToDTO())
 }
 
 // UpdateTask godoc
@@ -119,7 +124,7 @@ func (th *TaskHandler) CreateTask(c *gin.Context) {
 // @Param id path int true "Task ID"
 // @Param task body models.TaskRequest true "Task update data"
 // @Security ApiKeyAuth
-// @Success 200 {object} models.Task
+// @Success 200 {object} models.TaskDTO
 // @Failure 400 {object} object{error=string}
 // @Failure 404 {object} object{error=string}
 // @Failure 500 {object} object{error=string}
@@ -174,7 +179,7 @@ func (th *TaskHandler) UpdateTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, updatedTask)
+	c.JSON(http.StatusOK, updatedTask.ToDTO())
 }
 
 // DeleteTask godoc
@@ -212,7 +217,7 @@ func (th *TaskHandler) DeleteTask(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Task ID"
 // @Security ApiKeyAuth
-// @Success 200 {object} models.Task
+// @Success 200 {object} models.TaskDTO
 // @Failure 404 {object} object{error=string}
 // @Failure 500 {object} object{error=string}
 // @Router /api/tasks/{id}/complete [patch]
@@ -230,5 +235,5 @@ func (th *TaskHandler) ToggleTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, task)
+	c.JSON(http.StatusOK, task.ToDTO())
 }

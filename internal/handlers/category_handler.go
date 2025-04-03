@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	_ "github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/models"
+	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/models"
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/repositories"
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +22,7 @@ func NewCategoryHandler(repo repositories.CategoryRepository) *CategoryHandler {
 // @Tags categories
 // @Produce json
 // @Security ApiKeyAuth
-// @Success 200 {array} models.Category
+// @Success 200 {array} models.CategoryDTO
 // @Failure 500 {object} object{error=string}
 // @Router /api/categories [get]
 func (ch *CategoryHandler) GetCategories(c *gin.Context) {
@@ -32,5 +32,10 @@ func (ch *CategoryHandler) GetCategories(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, categories)
+	var categoriesDTO []*models.CategoryDTO
+	for _, category := range categories {
+		categoriesDTO = append(categoriesDTO, category.ToDTO())
+	}
+
+	c.JSON(http.StatusOK, categoriesDTO)
 }

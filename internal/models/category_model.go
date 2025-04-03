@@ -32,6 +32,21 @@ type Category struct {
 	Tasks     []Task     `gorm:"foreignKey:CategoryID" json:"-"`
 }
 
+type CategoryDTO struct {
+	ID       uint   `json:"id"`
+	Title    string `json:"title"`
+	Color    string `json:"color"`
+	IconName string `json:"icon_name"`
+}
+
+func (c *Category) ToDTO() *CategoryDTO {
+	return &CategoryDTO{
+		ID:       c.ID,
+		Title:    c.Title,
+		Color:    c.Color,
+		IconName: c.IconName,
+	}
+}
 func MigrateCategories(db *gorm.DB) error {
 	return db.AutoMigrate(&Category{})
 }

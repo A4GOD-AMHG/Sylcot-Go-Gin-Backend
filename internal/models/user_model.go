@@ -39,6 +39,20 @@ type User struct {
 	ResetToken   string     `gorm:"size:255" json:"reset_token"`
 }
 
+type UserDTO struct {
+	ID    uint   `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+func (u *User) ToDTO() *UserDTO {
+	return &UserDTO{
+		ID:    u.ID,
+		Name:  u.Name,
+		Email: u.Email,
+	}
+}
+
 func GetValidationMessages(err error) map[string][]string {
 	errors := make(map[string][]string)
 

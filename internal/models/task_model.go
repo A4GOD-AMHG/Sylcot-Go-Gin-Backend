@@ -65,6 +65,24 @@ type TaskRequest struct {
 	CategoryID uint     `json:"category_id" validate:"required"`
 }
 
+type TaskDTO struct {
+	ID       uint        `json:"id"`
+	Title    string      `json:"title"`
+	Priority Priority    `json:"priority"`
+	Status   bool        `json:"status"`
+	Category CategoryDTO `json:"category"`
+}
+
+func (t *Task) ToDTO() *TaskDTO {
+	return &TaskDTO{
+		ID:       t.ID,
+		Title:    t.Title,
+		Priority: t.Priority,
+		Status:   t.Status,
+		Category: *t.Category.ToDTO(),
+	}
+}
+
 func ValidateTaskRequest(taskReq TaskRequest) error {
 	validate := validator.New()
 	validate.RegisterValidation("priority", validatePriority)
