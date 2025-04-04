@@ -326,7 +326,7 @@ paths:
       summary: Toggle task status
       tags:
       - tasks
-  /auth/forgot-password:
+  /api/v1/auth/forgot-password:
     post:
       consumes:
       - application/json
@@ -368,7 +368,7 @@ paths:
       summary: Request password reset
       tags:
       - authentication
-  /auth/login:
+  /api/v1/auth/login:
     post:
       consumes:
       - application/json
@@ -423,7 +423,7 @@ paths:
       summary: User login
       tags:
       - authentication
-  /auth/register:
+  /api/v1/auth/register:
     post:
       consumes:
       - application/json
@@ -471,7 +471,7 @@ paths:
       summary: Register new user
       tags:
       - authentication
-  /auth/reset-password:
+  /api/v1/auth/reset-password:
     post:
       consumes:
       - application/json
@@ -510,7 +510,7 @@ paths:
       summary: Reset user password
       tags:
       - authentication
-  /auth/verify-email:
+  /api/v1/auth/verify-email:
     get:
       description: Validate email verification token
       parameters:

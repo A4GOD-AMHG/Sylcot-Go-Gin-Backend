@@ -91,7 +91,7 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	verificationLink := os.Getenv("API_URL") + "/api/v1/auth/verify-email?token=" + newUser.Token
+	verificationLink := os.Getenv("FRONT_URL") + "/auth/verify-email?token=" + newUser.Token
 	if err := utils.SendVerificationEmail(user.Email, verificationLink); err != nil {
 		log.Printf("Could not send verification email to %s: %v", user.Email, err)
 	}

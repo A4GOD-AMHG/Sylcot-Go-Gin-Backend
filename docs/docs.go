@@ -368,7 +368,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/forgot-password": {
+        "/api/v1/auth/forgot-password": {
             "post": {
                 "description": "Send password reset instructions to email",
                 "consumes": [
@@ -434,7 +434,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login": {
+        "/api/v1/auth/login": {
             "post": {
                 "description": "Authenticate user and return JWT token and user info",
                 "consumes": [
@@ -520,7 +520,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
+        "/api/v1/auth/register": {
             "post": {
                 "description": "Create a new user account",
                 "consumes": [
@@ -595,7 +595,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/reset-password": {
+        "/api/v1/auth/reset-password": {
             "post": {
                 "description": "Set new password using reset token",
                 "consumes": [
@@ -656,7 +656,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/verify-email": {
+        "/api/v1/auth/verify-email": {
             "get": {
                 "description": "Validate email verification token",
                 "produces": [
