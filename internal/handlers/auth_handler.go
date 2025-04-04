@@ -37,7 +37,7 @@ type RegisterRequest struct {
 // @Failure 400 {object} object{error=string,details=object}
 // @Failure 409 {object} object{error=string}
 // @Failure 500 {object} object{error=string}
-// @Router /auth/register [post]
+// @Router /api/v1/auth/register [post]
 func (ah *AuthHandler) Register(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -47,6 +47,8 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		})
 		return
 	}
+
+	log.Println(user)
 
 	if err := user.Validate(); err != nil {
 		validationErrors := models.GetValidationMessages(err)
@@ -89,7 +91,7 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	verificationLink := os.Getenv("API_URL") + "/auth/verify-email?token=" + newUser.Token
+	verificationLink := os.Getenv("API_URL") + "/api/v1/auth/verify-email?token=" + newUser.Token
 	if err := utils.SendVerificationEmail(user.Email, verificationLink); err != nil {
 		log.Printf("Could not send verification email to %s: %v", user.Email, err)
 	}
@@ -116,7 +118,7 @@ type LoginRequest struct {
 // @Failure 401 {object} object{error=string}
 // @Failure 403 {object} object{error=string}
 // @Failure 500 {object} object{error=string}
-// @Router /auth/login [post]
+// @Router /api/v1/auth/login [post]
 // Ejemplo de request:
 func (ah *AuthHandler) Login(c *gin.Context) {
 	var loginData struct {
@@ -170,7 +172,7 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 // @Failure 400 {object} object{error=string}
 // @Failure 404 {object} object{error=string}
 // @Failure 500 {object} object{error=string}
-// @Router /auth/verify-email [get]
+// @Router /api/v1/auth/verify-email [get]
 func (ah *AuthHandler) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
 	if token == "" {
@@ -211,7 +213,7 @@ func (ah *AuthHandler) VerifyEmail(c *gin.Context) {
 // @Success 200 {object} object{message=string}
 // @Failure 400 {object} object{error=string}
 // @Failure 500 {object} object{error=string}
-// @Router /auth/forgot-password [post]
+// @Router /api/v1/auth/forgot-password [post]
 func (ah *AuthHandler) ForgotPassword(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
@@ -235,7 +237,7 @@ func (ah *AuthHandler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	resetLink := os.Getenv("API_URL") + "/auth/reset-password?token=" + resetToken
+	resetLink := os.Getenv("API_URL") + "/api/v1/auth/reset-password?token=" + resetToken
 	if err := utils.SendResetPasswordEmail(user.Email, resetLink); err != nil {
 		log.Printf("Error sending reset email to %s: %v", user.Email, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send reset email"})
@@ -260,7 +262,7 @@ type ResetPasswordRequest struct {
 // @Success 200 {object} object{message=string}
 // @Failure 400 {object} object{error=string}
 // @Failure 500 {object} object{error=string}
-// @Router /auth/reset-password [post]
+// @Router /api/v1/auth/reset-password [post]
 func (ah *AuthHandler) ResetPassword(c *gin.Context) {
 	var req struct {
 		Token       string `json:"token" binding:"required"`

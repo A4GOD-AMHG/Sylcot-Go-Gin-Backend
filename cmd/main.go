@@ -13,11 +13,14 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/cmd/api"
 	_ "github.com/A4GOD-AMHG/sylcot-go-gin-backend/docs"
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/internal/models"
 	"github.com/A4GOD-AMHG/sylcot-go-gin-backend/pkg/database"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -43,6 +46,18 @@ func main() {
 		log.Fatal("Failed to seed categories: ", err)
 	}
 
-	app := api.NewApp(db)
+	router := gin.Default()
+	corsConfig := cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}
+	router.Use(cors.New(corsConfig))
+
+	app := api.NewAppWithRouter(router, db)
+
 	app.Run()
 }

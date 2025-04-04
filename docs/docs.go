@@ -734,7 +734,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
-                    "example": "password123"
+                    "example": "Password*1"
                 }
             }
         },
@@ -751,7 +751,7 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string",
-                    "example": "password123"
+                    "example": "Password*1"
                 }
             }
         },
@@ -765,7 +765,7 @@ const docTemplate = `{
                 "new_password": {
                     "type": "string",
                     "minLength": 8,
-                    "example": "password123"
+                    "example": "Password*1"
                 },
                 "token": {
                     "type": "string"
@@ -807,6 +807,9 @@ const docTemplate = `{
             "properties": {
                 "category": {
                     "$ref": "#/definitions/models.CategoryDTO"
+                },
+                "created_at": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"

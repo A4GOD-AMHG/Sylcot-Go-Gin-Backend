@@ -15,7 +15,7 @@ func SetupRoutes(router *gin.Engine,
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	auth := router.Group("/auth")
+	auth := router.Group("/api/v1/auth")
 	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)

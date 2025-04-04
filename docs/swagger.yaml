@@ -5,7 +5,7 @@ definitions:
         example: user@example.com
         type: string
       password:
-        example: password123
+        example: Password*1
         type: string
     type: object
   handlers.RegisterRequest:
@@ -17,13 +17,13 @@ definitions:
         example: John Doe
         type: string
       password:
-        example: password123
+        example: Password*1
         type: string
     type: object
   handlers.ResetPasswordRequest:
     properties:
       new_password:
-        example: password123
+        example: Password*1
         minLength: 8
         type: string
       token:
@@ -57,6 +57,8 @@ definitions:
     properties:
       category:
         $ref: '#/definitions/models.CategoryDTO'
+      created_at:
+        type: string
       id:
         type: integer
       priority:

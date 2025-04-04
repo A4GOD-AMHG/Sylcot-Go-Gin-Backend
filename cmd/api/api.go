@@ -10,16 +10,15 @@ import (
 )
 
 type App struct {
-	router *gin.Engine
+	Router *gin.Engine
 	db     *gorm.DB
 }
 
-func NewApp(db *gorm.DB) *App {
+func NewAppWithRouter(router *gin.Engine, db *gorm.DB) *App {
 	app := &App{
-		router: gin.Default(),
+		Router: router,
 		db:     db,
 	}
-
 	app.initializeRoutes()
 	return app
 }
@@ -33,7 +32,7 @@ func (a *App) initializeRoutes() {
 	taskHandler := handlers.NewTaskHandler(taskRepo)
 	categoryHandler := handlers.NewCategoryHandler(categoryRepo)
 
-	SetupRoutes(a.router, authHandler, taskHandler, categoryHandler)
+	SetupRoutes(a.Router, authHandler, taskHandler, categoryHandler)
 }
 
 func (a *App) Run() {
@@ -41,5 +40,5 @@ func (a *App) Run() {
 	if port == "" {
 		port = "8080"
 	}
-	a.router.Run(":" + port)
+	a.Router.Run(":" + port)
 }
